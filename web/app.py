@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string
+from flask import Flask, render_template_string, request
 import os
 import psycopg2
 
@@ -15,15 +15,30 @@ def get_db_connection():
 
 @app.route('/')
 def index():
+    country = request.args.get('country')
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT country, temperature, humidity FROM weather')
+    if country:
+        cur.execute(
+            'SELECT country, temperature, humidity FROM weather WHERE country ILIKE %s',
+            (country,)
+        )
+    else:
+        cur.execute('SELECT country, temperature, humidity FROM weather')
     rows = cur.fetchall()
     cur.close()
     conn.close()
-    html = '<h1>Weather Data</h1><table border="1"><tr><th>Country</th><th>Temperature (C)</th><th>Humidity (%)</th></tr>'
-    for country, temp, humidity in rows:
-        html += f'<tr><td>{country}</td><td>{temp}</td><td>{humidity}</td></tr>'
+    html = '<h1>Weather Data</h1>'
+    html += '<form method="get">'
+    html += '<input type="text" name="country" placeholder="Country"'
+    if country:
+        html += f' value="{country}"'
+    html += '>'
+    html += '<input type="submit" value="Search">'
+    html += '</form>'
+    html += '<table border="1"><tr><th>Country</th><th>Temperature (C)</th><th>Humidity (%)</th></tr>'
+    for c, temp, humidity in rows:
+        html += f'<tr><td>{c}</td><td>{temp}</td><td>{humidity}</td></tr>'
     html += '</table>'
     return render_template_string(html)
 

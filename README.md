@@ -8,6 +8,11 @@ This repository contains a simple Flask-based web application that shows weather
 2. Run `docker-compose up --build` to start the web and database containers.
 3. Open <http://localhost:5000> in your browser to view the app.
 
+## Search by Country
+
+On the main page you can filter the table by entering a country name in the
+search field. Leaving the field blank will display all countries.
+
 ## Development in VS Code
 
 1. Install the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension.

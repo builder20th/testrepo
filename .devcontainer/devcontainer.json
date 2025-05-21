@@ -1,0 +1,8 @@
+{
+    "name": "Weather App DevContainer",
+    "dockerComposeFile": ["../docker-compose.yml"],
+    "service": "web",
+    "workspaceFolder": "/workspace",
+    "extensions": ["ms-python.python"],
+    "postCreateCommand": "pip install -r web/requirements.txt"
+}

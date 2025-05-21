@@ -48,7 +48,25 @@ def index():
     cur.close()
     conn.close()
 
-    html = '<h1>Weather Data</h1>'
+    html = '''<style>
+        body { background: linear-gradient(to bottom, #ffffff, #e0f0ff); font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; text-align: left; }
+        th { background: #4CAF50; color: white; }
+        tr:nth-child(even) { background: #f2f2f2; }
+        .flag { width: 40px; height: 25px; border: 1px solid #000; }
+        .flag-de { background: linear-gradient(to bottom, black 0%, black 33%, red 33%, red 66%, gold 66%, gold 100%); }
+        .flag-us { background: repeating-linear-gradient(to bottom, red 0, red 10%, white 10%, white 20%); }
+        .flag-es { background: linear-gradient(to bottom, red 0%, red 25%, #ffc400 25%, #ffc400 75%, red 75%, red 100%); }
+        .flag-fr { background: linear-gradient(to right, blue 0%, blue 33%, white 33%, white 66%, red 66%, red 100%); }
+        .flag-it { background: linear-gradient(to right, green 0%, green 33%, white 33%, white 66%, red 66%, red 100%); }
+        .flag-ca { background: linear-gradient(to right, red 0%, red 25%, white 25%, white 75%, red 75%, red 100%); }
+        .flag-br { background: green; position: relative; }
+        .flag-br::after { content: ''; position: absolute; top: 4px; left: 8px; width: 24px; height: 16px; background: yellow; transform: rotate(45deg); }
+        .flag-jp { background: white; position: relative; }
+        .flag-jp::after { content: ''; position: absolute; top: 5px; left: 13px; width: 14px; height: 14px; background: red; border-radius: 50%; }
+    </style>'''
+    html += '<h1>Weather Data</h1>'
     html += '<form method="get">'
     html += '<input type="text" name="country" placeholder="Country"'
     if country:
@@ -56,9 +74,21 @@ def index():
     html += '>'
     html += '<input type="submit" value="Search">'
     html += '</form>'
-    html += '<table border="1"><tr><th>Country</th><th>Temperature (C)</th><th>Humidity (%)</th></tr>'
+    flag_map = {
+        'Deutschland': 'de',
+        'USA': 'us',
+        'Spanien': 'es',
+        'Frankreich': 'fr',
+        'Italien': 'it',
+        'Kanada': 'ca',
+        'Brasilien': 'br',
+        'Japan': 'jp'
+    }
+    html += '<table border="1"><tr><th>Flag</th><th>Country</th><th>Temperature (C)</th><th>Humidity (%)</th></tr>'
     for c, temp, humidity in rows:
-        html += f'<tr><td>{c}</td><td>{temp}</td><td>{humidity}</td></tr>'
+        cls = flag_map.get(c, '')
+        flag_div = f'<div class="flag flag-{cls}"></div>' if cls else ''
+        html += f'<tr><td>{flag_div}</td><td>{c}</td><td>{temp}</td><td>{humidity}</td></tr>'
     html += '</table>'
 
     return render_template_string(html)

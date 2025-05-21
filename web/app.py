@@ -21,10 +21,31 @@ def index():
     rows = cur.fetchall()
     cur.close()
     conn.close()
-    html = '<h1>Weather Data</h1><table border="1"><tr><th>Country</th><th>Temperature (C)</th><th>Humidity (%)</th></tr>'
+    html = '''
+    <!doctype html>
+    <html>
+    <head>
+        <title>Weather Data</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            table { border-collapse: collapse; width: 60%; margin: auto; }
+            th, td { padding: 8px 12px; border: 1px solid #ccc; text-align: center; }
+            th { background-color: #f4f4f4; }
+            h1 { text-align: center; }
+        </style>
+    </head>
+    <body>
+        <h1>Weather Data</h1>
+        <table>
+            <tr><th>Country</th><th>Temperature (C)</th><th>Humidity (%)</th></tr>
+    '''
     for country, temp, humidity in rows:
         html += f'<tr><td>{country}</td><td>{temp}</td><td>{humidity}</td></tr>'
-    html += '</table>'
+    html += '''
+        </table>
+    </body>
+    </html>
+    '''
     return render_template_string(html)
 
 if __name__ == '__main__':

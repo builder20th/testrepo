@@ -17,14 +17,14 @@ def get_db_connection():
 def update_weather_data():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT country FROM weather')
+    cur.execute('SELECT code FROM weather')
     countries = [row[0] for row in cur.fetchall()]
-    for country in countries:
+    for code in countries:
         temp = random.randint(15, 35)
         humidity = random.randint(40, 80)
         cur.execute(
-            'UPDATE weather SET temperature = %s, humidity = %s WHERE country = %s',
-            (temp, humidity, country)
+            'UPDATE weather SET temperature = %s, humidity = %s WHERE code = %s',
+            (temp, humidity, code)
         )
     conn.commit()
     cur.close()
@@ -38,12 +38,13 @@ def index():
     conn = get_db_connection()
     cur = conn.cursor()
     if country:
-        cur.execute(
-            'SELECT country, temperature, humidity FROM weather WHERE country ILIKE %s',
-            (country,)
-        )
+        query = '''SELECT code, country, country_en, temperature, humidity
+                   FROM weather
+                   WHERE country ILIKE %s OR country_en ILIKE %s'''
+        like = f'%{country}%'
+        cur.execute(query, (like, like))
     else:
-        cur.execute('SELECT country, temperature, humidity FROM weather')
+        cur.execute('SELECT code, country, country_en, temperature, humidity FROM weather')
     rows = cur.fetchall()
     cur.close()
     conn.close()
@@ -75,22 +76,45 @@ def index():
     html += '<input type="submit" value="Search">'
     html += '</form>'
     flag_map = {
-        'Deutschland': 'de',
-        'USA': 'us',
-        'Spanien': 'es',
-        'Frankreich': 'fr',
-        'Italien': 'it',
-        'Kanada': 'ca',
-        'Brasilien': 'br',
-        'Japan': 'jp'
+        'DE': 'de',
+        'US': 'us',
+        'ES': 'es',
+        'FR': 'fr',
+        'IT': 'it',
+        'CA': 'ca',
+        'BR': 'br',
+        'JP': 'jp'
     }
     html += '<table border="1"><tr><th>Flag</th><th>Country</th><th>Temperature (C)</th><th>Humidity (%)</th></tr>'
-    for c, temp, humidity in rows:
-        cls = flag_map.get(c, '')
+    for code, c_de, c_en, temp, humidity in rows:
+        cls = flag_map.get(code, '')
         flag_div = f'<div class="flag flag-{cls}"></div>' if cls else ''
-        html += f'<tr><td>{flag_div}</td><td>{c}</td><td>{temp}</td><td>{humidity}</td></tr>'
+        link = f'<a href="/country/{code}">{c_de} ({c_en})</a>'
+        html += f'<tr><td>{flag_div}</td><td>{link}</td><td>{temp}</td><td>{humidity}</td></tr>'
     html += '</table>'
 
+    return render_template_string(html)
+
+
+@app.route('/country/<code>')
+def country_detail(code):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        'SELECT country, country_en, temperature, humidity, info FROM weather WHERE code = %s',
+        (code,)
+    )
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not row:
+        return 'Country not found', 404
+    c_de, c_en, temp, humidity, info = row
+    html = f'<h1>{c_de} ({c_en})</h1>'
+    html += f'<p>{info}</p>'
+    html += f'<p>Temperature: {temp} C</p>'
+    html += f'<p>Humidity: {humidity}%</p>'
+    html += '<p><a href="/">Back</a></p>'
     return render_template_string(html)
 
 if __name__ == '__main__':

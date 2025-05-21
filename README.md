@@ -26,6 +26,13 @@ search field. Leaving the field blank will display all countries.
 - `docker-compose.yml` - Orchestrates the web and db containers.
 - `.devcontainer/` - Devcontainer configuration for VS Code.
 
+## Sample Data
+
+The database is seeded with several example countries, including Germany,
+the USA, Spain, France, Italy, Canada, Brazil and Japan. On each page load the
+application randomizes the temperature and humidity values for demonstration
+purposes.
+
 ## Note
 
 This example uses static sample data inserted into the database on startup. You can expand it to fetch real weather data from an external API and store it in the database.

@@ -10,8 +10,9 @@ This repository contains a simple Flask-based web application that shows weather
 
 ## Search by Country
 
-On the main page you can filter the table by entering a country name in the
-search field. Leaving the field blank will display all countries.
+On the main page you can filter the table by entering a country name in German
+or English. Leaving the field blank will display all countries. Clicking a
+country opens a detail page with additional information.
 
 ## Development in VS Code
 
@@ -28,10 +29,9 @@ search field. Leaving the field blank will display all countries.
 
 ## Sample Data
 
-The database is seeded with several example countries, including Germany,
-the USA, Spain, France, Italy, Canada, Brazil and Japan. On each page load the
-application randomizes the temperature and humidity values for demonstration
-purposes.
+The database is seeded with many countries and contains both the German and
+English names as well as a short info text. On each page load the application
+randomizes the temperature and humidity values for demonstration purposes.
 
 ## Note
 

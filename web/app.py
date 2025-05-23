@@ -15,39 +15,54 @@ def get_db_connection():
     return conn
 
 def update_weather_data():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT code FROM weather')
-    countries = [row[0] for row in cur.fetchall()]
-    for code in countries:
-        temp = random.randint(15, 35)
-        humidity = random.randint(40, 80)
-        cur.execute(
-            'UPDATE weather SET temperature = %s, humidity = %s WHERE code = %s',
-            (temp, humidity, code)
-        )
-    conn.commit()
-    cur.close()
-    conn.close()
+    """Randomize temperature and humidity values for all countries."""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT code FROM weather')
+        countries = [row[0] for row in cur.fetchall()]
+        for code in countries:
+            temp = random.randint(15, 35)
+            humidity = random.randint(40, 80)
+            cur.execute(
+                'UPDATE weather SET temperature = %s, humidity = %s WHERE code = %s',
+                (temp, humidity, code)
+            )
+        conn.commit()
+    except psycopg2.Error as e:
+        app.logger.exception('Failed to update weather data: %s', e)
+    finally:
+        if 'cur' in locals():
+            cur.close()
+        if 'conn' in locals():
+            conn.close()
 
 @app.route('/')
 def index():
 
     country = request.args.get('country')
 
-    conn = get_db_connection()
-    cur = conn.cursor()
-    if country:
-        query = '''SELECT code, country, country_en, temperature, humidity
-                   FROM weather
-                   WHERE country ILIKE %s OR country_en ILIKE %s'''
-        like = f'%{country}%'
-        cur.execute(query, (like, like))
-    else:
-        cur.execute('SELECT code, country, country_en, temperature, humidity FROM weather')
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
+    try:
+        update_weather_data()
+        conn = get_db_connection()
+        cur = conn.cursor()
+        if country:
+            query = '''SELECT code, country, country_en, temperature, humidity
+                       FROM weather
+                       WHERE country ILIKE %s OR country_en ILIKE %s'''
+            like = f'%{country}%'
+            cur.execute(query, (like, like))
+        else:
+            cur.execute('SELECT code, country, country_en, temperature, humidity FROM weather')
+        rows = cur.fetchall()
+    except psycopg2.Error as e:
+        app.logger.exception('Database error: %s', e)
+        return 'Internal Server Error', 500
+    finally:
+        if 'cur' in locals():
+            cur.close()
+        if 'conn' in locals():
+            conn.close()
 
     html = '''<style>
         body { background: linear-gradient(to bottom, #ffffff, #e0f0ff); font-family: Arial, sans-serif; }
